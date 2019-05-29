@@ -34,9 +34,9 @@ func (p *Consumer) StartConsume(consumerFunc ConsumerFunc) error {
 	if err != nil {
 		return err
 	}
-	//if err = ch.Qos(1, 0, false); err != nil {
-	//	return err
-	//}
+	if err = ch.Qos(1, 0, false); err != nil {
+		return err
+	}
 	defer func() {
 		log4g.ErrorFormat("Publish Close Ch err %+v", ch.Close())
 	}()
