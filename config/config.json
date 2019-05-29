@@ -1,0 +1,27 @@
+{
+  "Log4g": {
+    "Path": "logs",
+    "Stdout": true
+  },
+  "ErpRabbitMq": {
+    "DataSource": "amqp://root:123456@192.168.1.200:5672/",
+    "QueueName": "erp_queue"
+  },
+  "MpsRabbitMq": {
+    "DataSource": "amqp://root:123456@192.168.1.200:5672/",
+    "QueueName": "mps_queue"
+  },
+  "RomeoRabbitMq": {
+    "DataSource": "amqp://root:123456@192.168.1.200:5672/",
+    "QueueName": "romeo_queue"
+  },
+  "MpsMysql": {
+    "DataSource": "root:Qwer.123@192.168.1.200/mps?charset=utf8mb4"
+  },
+  "ErpMysql": {
+    "DataSource": "root:Qwer.123@192.168.1.200/ecshop?charset=utf8mb4"
+  },
+  "RomeoMysql": {
+    "DataSource": "root:Qwer.123@192.168.1.200/romeo?charset=utf8mb4"
+  }
+}
