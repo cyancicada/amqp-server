@@ -30,14 +30,14 @@ func (h *MpsHandler) Consumer(message *rabbitmq.Message) error {
 		sqlorArgs := []interface{}(nil)
 		switch message.Operate {
 		case rabbitmq.InsertType:
-			ks, placeholder, vs := utils.SqlBuild(message.Data, ",")
+			ks, placeholder, vs := utils.SqlBuild(message.Data, "")
 			query = "insert into " + message.DataBase + "." + message.Table + " (" + ks + ") values (" + placeholder + ")"
 			sqlorArgs = append(sqlorArgs, query)
 			sqlorArgs = append(sqlorArgs, vs...)
 		case rabbitmq.DeleteType:
 			query = "delete from " + message.DataBase + "." + message.Table + " where " + message.Condition
 		case rabbitmq.UpdateType:
-			ks, _, vs := utils.SqlBuild(message.Data, "=?,")
+			ks, _, vs := utils.SqlBuild(message.Data, "=?")
 			query = "update  " + message.DataBase + "." + message.Table + " set " + ks + " where " + message.Condition
 			sqlorArgs = append(sqlorArgs, query)
 			sqlorArgs = append(sqlorArgs, vs...)

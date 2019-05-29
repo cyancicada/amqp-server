@@ -9,10 +9,10 @@ func SqlBuild(data map[string]interface{}, sep string) (string, string, []interf
 	vs := []interface{}(nil)
 	placeholder := "?,"
 	for k, v := range data {
-		ks = append(ks, k)
+		ks = append(ks, k+sep)
 		vs = append(vs, v)
 	}
-	return strings.Join(ks, sep),
+	return strings.Join(ks, ","),
 		strings.Trim(strings.Repeat(placeholder, len(vs)), ","),
 		vs
 }
