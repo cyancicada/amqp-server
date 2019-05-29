@@ -38,7 +38,7 @@ func (h *MpsHandler) Consumer(message *rabbitmq.Message) error {
 			query = "delete from " + message.DataBase + "." + message.Table + " where " + message.Condition
 		case rabbitmq.UpdateType:
 			ks, _, vs := utils.SqlBuild(message.Data, "=?,")
-			query = "update  " + message.DataBase + "." + message.Table + " sett " + ks + " where " + message.Condition
+			query = "update  " + message.DataBase + "." + message.Table + " set " + ks + " where " + message.Condition
 			sqlorArgs = append(sqlorArgs, query)
 			sqlorArgs = append(sqlorArgs, vs...)
 		}
