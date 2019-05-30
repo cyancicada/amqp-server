@@ -23,5 +23,8 @@
   },
   "RomeoMysql": {
     "DataSource": "root:Qwer.123@tcp(192.168.1.200:3306)/romeo?charset=utf8mb4"
+  },
+  "AmqpMysql": {
+    "DataSource": "root:Qwer.123@tcp(192.168.1.200:3306)/amqp?charset=utf8mb4"
   }
 }

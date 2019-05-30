@@ -9,6 +9,8 @@ import (
 	"ampp-server/common/rabbitmq"
 	"ampp-server/config"
 	"ampp-server/handler"
+	"ampp-server/model"
+	"ampp-server/service"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
@@ -35,16 +37,9 @@ var configFile = flag.String("f", "config/config.json", "Please set config file"
 //	if err != nil {
 //		log.Fatal(err)
 //	}
-//	i := 17
+//	i := 0
 //	for {
 //		operate := rabbitmq.InsertType
-//		switch i % 3 {
-//		case 0:
-//			operate = rabbitmq.UpdateType
-//		case 1:
-//			operate = rabbitmq.DeleteType
-//
-//		}
 //		log4g.Info(mpsPublisher.Push(rabbitmq.Message{
 //			DataBase: "mps",
 //			Table:    "AuthItem",
@@ -57,17 +52,8 @@ var configFile = flag.String("f", "config/config.json", "Please set config file"
 //				"data":        "data_" + strconv.Itoa(i),
 //			},
 //		}));
-//		time.Sleep(3 * time.Second)
+//		time.Sleep(1 * time.Second)
 //	}
-//
-//	//CREATE TABLE `AuthItem` (
-//	//  `name` varchar(64) NOT NULL,
-//	//  `type` int(11) NOT NULL,
-//	//  `description` text,
-//	//  `bizrule` text,
-//	//  `data` text,
-//	//  PRIMARY KEY (`name`) USING BTREE
-//	//) ENGINE=MyISAM DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 //}
 func main() {
 	flag.Parse()
@@ -81,7 +67,10 @@ func main() {
 	}
 	log4g.Init(conf.Log4g)
 	mpsMysqlEngine, err := xorm.NewEngine("mysql", conf.MpsMysql.DataSource)
-
+	mysqlEngine, err := xorm.NewEngine("mysql", conf.AmqpMysql.DataSource)
+	if err != nil {
+		log.Fatalf("read file %s: %s", *configFile, err)
+	}
 	mpsConsume, err := rabbitmq.NewConsumer(
 		conf.MpsRabbitMq.DataSource,
 		conf.MpsRabbitMq.QueueName,
@@ -90,7 +79,10 @@ func main() {
 		log.Fatalf("build consume fail %+v", err)
 	}
 	defer mpsConsume.Close()
-	mpsHandler := handler.NewMpsHandler(mpsMysqlEngine)
+	mpsHandler := handler.NewMpsHandler(service.NewMpsService(
+		model.NewMpsModel(mpsMysqlEngine),
+		model.NewMessagesModel(mysqlEngine),
+	))
 	log4g.Info("mps consumer start ...")
 	log4g.Error(mpsConsume.StartConsume(mpsHandler.Consumer))
 }

@@ -10,6 +10,7 @@ type (
 		MpsRabbitMq   RabbitMq
 		RomeoRabbitMq RabbitMq
 		MpsMysql      Mysql
+		AmqpMysql     Mysql
 		ErpMysql      Mysql
 		RomeoMysql    Mysql
 	}
