@@ -3,8 +3,8 @@ package rabbitmq
 import (
 	"encoding/json"
 
-	"github.com/yakaa/log4g"
 	"github.com/streadway/amqp"
+	"github.com/yakaa/log4g"
 )
 
 type (
@@ -13,8 +13,6 @@ type (
 		queueName string
 		Exchange  string
 	}
-
-
 )
 
 func NewPublisher(dataSource, queueName string) (*Publisher, error) {
@@ -35,7 +33,9 @@ func (p *Publisher) Push(message Message) error {
 		return err
 	}
 	defer func() {
-		log4g.ErrorFormat("Publish Close Ch err %+v", ch.Close())
+		if err := ch.Close(); err != nil {
+			log4g.ErrorFormat("Publish Close Ch err %+v", err)
+		}
 	}()
 	q, err := ch.QueueDeclare(p.queueName, true, false, false, false, nil)
 	if err != nil {
@@ -53,7 +53,6 @@ func (p *Publisher) Push(message Message) error {
 	}
 	return nil
 }
-
 
 func (p *Publisher) Close() {
 	if err := p.amqpDial.Close(); err != nil {
