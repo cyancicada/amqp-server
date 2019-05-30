@@ -37,7 +37,7 @@ var configFile = flag.String("f", "config/config.json", "Please set config file"
 //	if err != nil {
 //		log.Fatal(err)
 //	}
-//	i := 0
+//	i := 1
 //	for {
 //		operate := rabbitmq.InsertType
 //		log4g.Info(mpsPublisher.Push(rabbitmq.Message{
@@ -53,6 +53,7 @@ var configFile = flag.String("f", "config/config.json", "Please set config file"
 //			},
 //		}));
 //		time.Sleep(1 * time.Second)
+//		i++
 //	}
 //}
 func main() {
