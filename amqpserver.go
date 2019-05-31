@@ -18,45 +18,8 @@ import (
 	"github.com/yakaa/log4g"
 )
 
-var configFile = flag.String("f", "config/config.json", "Please set config file")
+var configFile = flag.String("c", "config/config.json", "Please set config file")
 
-//
-//func main() {
-//	flag.Parse()
-//	body, err := ioutil.ReadFile(*configFile)
-//	if err != nil {
-//		log.Fatalf("read file %s: %s", *configFile, err)
-//	}
-//	conf := new(config.Config)
-//	if err := json.Unmarshal(body, conf); err != nil {
-//		log.Fatalf("json.Unmarshal %s: %s", *configFile, err)
-//	}
-//	mpsPublisher, err := rabbitmq.NewPublisher(
-//		conf.MpsRabbitMq.DataSource,
-//		conf.MpsRabbitMq.QueueName,
-//	)
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	i := 1
-//	for {
-//		operate := rabbitmq.InsertType
-//		log4g.Info(mpsPublisher.Push(rabbitmq.Message{
-//			DataBase: "mps",
-//			Table:    "AuthItem",
-//			Operate:  operate,
-//			Data: map[string]interface{}{
-//				"name":        "yk_" + strconv.Itoa(i),
-//				"type":        "type_" + strconv.Itoa(i),
-//				"description": "description" + strconv.Itoa(i),
-//				"bizrule":     "bizrule_" + strconv.Itoa(i),
-//				"data":        "data_" + strconv.Itoa(i),
-//			},
-//		}));
-//		time.Sleep(1 * time.Second)
-//		i++
-//	}
-//}
 func main() {
 	flag.Parse()
 	body, err := ioutil.ReadFile(*configFile)
