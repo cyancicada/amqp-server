@@ -12,25 +12,22 @@ type (
 		amqpDial     *amqp.Connection
 		queueName    string
 		ConsumerName string
+		stop         chan bool
+		consumerFunc ConsumerFunc
 	}
 	ConsumerFunc func(message *Message) error
 )
 
-func NewConsumer(dataSource, queueName string) (*Consumer, error) {
-	amqpDial, err := amqp.Dial(dataSource)
-	if err != nil {
-		return nil, err
-	}
-	return &Consumer{amqpDial: amqpDial, queueName: queueName}, nil
+func BuildConsumer(amqpDial *amqp.Connection, queueName string, consumerFunc ConsumerFunc) *Consumer {
+	return &Consumer{amqpDial: amqpDial, queueName: queueName, stop: make(chan bool), consumerFunc: consumerFunc}
 }
 
-func (p *Consumer) SetConsumerName(consumerName string) {
-	p.ConsumerName = consumerName
+func (c *Consumer) SetConsumerName(consumerName string) {
+	c.ConsumerName = consumerName
 }
 
-func (p *Consumer) StartConsume(consumerFunc ConsumerFunc) error {
-	forever := make(chan bool)
-	ch, err := p.amqpDial.Channel()
+func (c *Consumer) StartConsume() error {
+	ch, err := c.amqpDial.Channel()
 	if err != nil {
 		return err
 	}
@@ -38,9 +35,9 @@ func (p *Consumer) StartConsume(consumerFunc ConsumerFunc) error {
 		return err
 	}
 	defer func() {
-		log4g.ErrorFormat("Publish Close Ch err %+v", ch.Close())
+		log4g.ErrorFormat("Consumer Close Ch err %+v", ch.Close())
 	}()
-	response, err := ch.Consume(p.queueName, p.ConsumerName, false, false, false, false, nil)
+	response, err := ch.Consume(c.queueName, c.ConsumerName, false, false, false, false, nil)
 	go func() {
 		for d := range response {
 			message := new(Message)
@@ -50,7 +47,7 @@ func (p *Consumer) StartConsume(consumerFunc ConsumerFunc) error {
 					log4g.ErrorFormat("d.Ack message fail err %+v", err)
 				}
 			} else {
-				if err := consumerFunc(message); err != nil {
+				if err := c.consumerFunc(message); err != nil {
 					log4g.ErrorFormat("Consume Message Err %+v", err)
 					log4g.InfoFormat("ch.Reject Error %+v", ch.Reject(d.DeliveryTag, true))
 				} else {
@@ -61,12 +58,28 @@ func (p *Consumer) StartConsume(consumerFunc ConsumerFunc) error {
 			}
 		}
 	}()
-	<-forever
+	<-c.stop
 	return nil
 }
 
-func (p *Consumer) Close() {
-	if err := p.amqpDial.Close(); err != nil {
+func RunConsumes(consumers ...*Consumer) {
+	if len(consumers) == 0 {
+		return
+	}
+	forever := make(chan bool)
+	for _, consumer := range consumers {
+		go func(c *Consumer) {
+			log4g.InfoFormat("start Consumer queueName [%s]...", c.queueName)
+			if err := c.StartConsume(); err != nil {
+				log4g.ErrorFormat("consumer.StartConsume fail %+v", err)
+			}
+		}(consumer)
+	}
+	<-forever
+}
+
+func Close(amqpDial *amqp.Connection) {
+	if err := amqpDial.Close(); err != nil {
 		log4g.ErrorFormat("Consumer conn Close err %+v", err)
 	}
 }

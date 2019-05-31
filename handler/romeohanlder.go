@@ -2,22 +2,20 @@ package handler
 
 import (
 	"ampp-server/common/rabbitmq"
-
-	"github.com/go-xorm/xorm"
+	"ampp-server/service"
 )
 
 type (
 	RomeoHandler struct {
-		romeoMysql *xorm.Engine
+		romeoService *service.RomeoService
 	}
 )
 
-func NewRomeoHandler(mpsMysql *xorm.Engine) (*RomeoHandler) {
+func NewRomeoHandler(romeoService *service.RomeoService) *RomeoHandler {
 
-	return &RomeoHandler{romeoMysql: mpsMysql}
+	return &RomeoHandler{romeoService: romeoService}
 }
 
 func (h *RomeoHandler) Consumer(message *rabbitmq.Message) error {
-
-	return nil
+	return h.romeoService.OperateMessage(message)
 }

@@ -5,18 +5,18 @@ import (
 )
 
 type (
-	MpsModel struct {
-		mpsMysql *xorm.Engine
+	BaseModel struct {
+		mysqlEngine *xorm.Engine
 	}
 )
 
-func NewMpsModel(mpsMysql *xorm.Engine) *MpsModel {
+func NewBaseModel(mysqlEngine *xorm.Engine) *BaseModel {
 
-	return &MpsModel{mpsMysql: mpsMysql}
+	return &BaseModel{mysqlEngine: mysqlEngine}
 }
 
-func (m *MpsModel) ExecSql(sqlorArgs []interface{}) error {
-	_, err := m.mpsMysql.Transaction(func(session *xorm.Session) (i interface{}, e error) {
+func (m *BaseModel) ExecSql(sqlorArgs []interface{}) error {
+	_, err := m.mysqlEngine.Transaction(func(session *xorm.Session) (i interface{}, e error) {
 		return session.Exec(sqlorArgs...)
 	})
 	return err

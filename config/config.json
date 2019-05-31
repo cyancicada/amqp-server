@@ -3,17 +3,11 @@
     "Path": "logs",
     "Stdout": true
   },
-  "ErpRabbitMq": {
+  "RabbitMq": {
     "DataSource": "amqp://root:123456@192.168.1.200:5672/",
-    "QueueName": "erp_queue"
-  },
-  "MpsRabbitMq": {
-    "DataSource": "amqp://root:123456@192.168.1.200:5672/",
-    "QueueName": "mps_queue"
-  },
-  "RomeoRabbitMq": {
-    "DataSource": "amqp://root:123456@192.168.1.200:5672/",
-    "QueueName": "romeo_queue"
+    "ErpQueueName": "erp_queue",
+    "MpsQueueName": "mps_queue",
+    "RomeoQueueName": "romeo_queue"
   },
   "MpsMysql": {
     "DataSource": "root:Qwer.123@tcp(192.168.1.200:3306)/mps?charset=utf8mb4"

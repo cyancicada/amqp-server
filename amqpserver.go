@@ -11,6 +11,7 @@ import (
 	"ampp-server/handler"
 	"ampp-server/model"
 	"ampp-server/service"
+	"github.com/streadway/amqp"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/go-xorm/xorm"
@@ -68,22 +69,34 @@ func main() {
 	}
 	log4g.Init(conf.Log4g)
 	mpsMysqlEngine, err := xorm.NewEngine("mysql", conf.MpsMysql.DataSource)
+	erpMysqlEngine, err := xorm.NewEngine("mysql", conf.ErpMysql.DataSource)
+	romeoMysqlEngine, err := xorm.NewEngine("mysql", conf.RomeoMysql.DataSource)
+
 	mysqlEngine, err := xorm.NewEngine("mysql", conf.AmqpMysql.DataSource)
 	if err != nil {
 		log.Fatalf("read file %s: %s", *configFile, err)
 	}
-	mpsConsume, err := rabbitmq.NewConsumer(
-		conf.MpsRabbitMq.DataSource,
-		conf.MpsRabbitMq.QueueName,
-	)
+	amqpDial, err := amqp.Dial(conf.RabbitMq.DataSource)
 	if err != nil {
-		log.Fatalf("build consume fail %+v", err)
+		log.Fatalf("create connect fail %+v", err)
 	}
-	defer mpsConsume.Close()
+
 	mpsHandler := handler.NewMpsHandler(service.NewMpsService(
-		model.NewMpsModel(mpsMysqlEngine),
+		model.NewBaseModel(mpsMysqlEngine),
 		model.NewMessagesModel(mysqlEngine),
 	))
-	log4g.Info("mps consumer start ...")
-	log4g.Error(mpsConsume.StartConsume(mpsHandler.Consumer))
+	erpHandler := handler.NewErpHandler(service.NewErpService(
+		model.NewBaseModel(erpMysqlEngine),
+		model.NewMessagesModel(mysqlEngine),
+	))
+	romeoHandler := handler.NewRomeoHandler(service.NewRomeoService(
+		model.NewBaseModel(romeoMysqlEngine),
+		model.NewMessagesModel(mysqlEngine),
+	))
+	mpsConsumer := rabbitmq.BuildConsumer(amqpDial, conf.RabbitMq.MpsQueueName, mpsHandler.Consumer)
+	erpConsumer := rabbitmq.BuildConsumer(amqpDial, conf.RabbitMq.ErpQueueName, erpHandler.Consumer)
+	romeoConsumer := rabbitmq.BuildConsumer(amqpDial, conf.RabbitMq.RomeoQueueName, romeoHandler.Consumer)
+	defer rabbitmq.Close(amqpDial)
+	rabbitmq.RunConsumes(erpConsumer, romeoConsumer, mpsConsumer)
+
 }

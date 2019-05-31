@@ -11,18 +11,18 @@ import (
 )
 
 type (
-	MpsService struct {
+	RomeoService struct {
 		baseModel    *model.BaseModel
 		messageModel *model.MessagesModel
 	}
 )
 
-func NewMpsService(baseModel *model.BaseModel, messageModel *model.MessagesModel) *MpsService {
+func NewRomeoService(baseModel *model.BaseModel, messageModel *model.MessagesModel) *RomeoService {
 
-	return &MpsService{baseModel: baseModel, messageModel: messageModel}
+	return &RomeoService{baseModel: baseModel, messageModel: messageModel}
 }
 
-func (s *MpsService) OperateMessage(message *rabbitmq.Message) error {
+func (s *RomeoService) OperateMessage(message *rabbitmq.Message) error {
 	status := model.SuccessMessageStatus
 	if err := s.baseModel.ExecSql(utils.ParseMessage(message)); err != nil {
 		log4g.ErrorFormat("OperateMessage s.mpsModel.ExecSql Err %+v", err)

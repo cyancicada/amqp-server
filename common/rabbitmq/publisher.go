@@ -15,12 +15,8 @@ type (
 	}
 )
 
-func NewPublisher(dataSource, queueName string) (*Publisher, error) {
-	amqpDial, err := amqp.Dial(dataSource)
-	if err != nil {
-		return nil, err
-	}
-	return &Publisher{amqpDial: amqpDial, queueName: queueName}, nil
+func BuildPublisher(amqpDial *amqp.Connection, queueName string) *Publisher {
+	return &Publisher{amqpDial: amqpDial, queueName: queueName}
 }
 
 func (p *Publisher) SetExchange(exchange string) {

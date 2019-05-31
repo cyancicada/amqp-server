@@ -2,22 +2,20 @@ package handler
 
 import (
 	"ampp-server/common/rabbitmq"
-
-	"github.com/go-xorm/xorm"
+	"ampp-server/service"
 )
 
 type (
 	ErpHandler struct {
-		erpMysql *xorm.Engine
+		erpService *service.ErpService
 	}
 )
 
-func NewErpHandler(erpMysql *xorm.Engine) (*ErpHandler) {
+func NewErpHandler(erpService *service.ErpService) *ErpHandler {
 
-	return &ErpHandler{erpMysql: erpMysql}
+	return &ErpHandler{erpService: erpService}
 }
 
 func (h *ErpHandler) Consumer(message *rabbitmq.Message) error {
-
-	return nil
+	return h.erpService.OperateMessage(message)
 }
