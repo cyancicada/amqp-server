@@ -11,6 +11,7 @@ type (
 		AmqpMysql  Mysql
 		ErpMysql   Mysql
 		RomeoMysql Mysql
+		RsaCert    RsaCert
 	}
 
 	RabbitMq struct {
@@ -18,6 +19,10 @@ type (
 		ErpQueueName   string
 		MpsQueueName   string
 		RomeoQueueName string
+	}
+	RsaCert struct {
+		PublicKeyPath  string
+		PrivateKeyPath string
 	}
 	Mysql struct {
 		DataSource string

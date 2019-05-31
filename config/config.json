@@ -3,6 +3,9 @@
     "Path": "logs",
     "Stdout": true
   },
+  "RsaCert": {
+    "PrivateKeyPath": "./cert/rsa_private_key.pem"
+  },
   "RabbitMq": {
     "DataSource": "amqp://root:123456@192.168.1.200:5672/",
     "ErpQueueName": "erp_queue",
