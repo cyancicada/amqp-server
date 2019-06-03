@@ -1,4 +1,4 @@
-package main
+package rsa
 
 import (
 	"crypto/rand"
@@ -42,7 +42,11 @@ func (r *Rsa) Encrypt(origData []byte) ([]byte, error) {
 		return nil, err
 	}
 	pub := pubInterface.(*rsa.PublicKey)
-	return rsa.EncryptPKCS1v15(rand.Reader, pub, []byte(base64.StdEncoding.EncodeToString([]byte(origData))))
+	encryptBytes, err := rsa.EncryptPKCS1v15(rand.Reader, pub, origData)
+	if err != nil {
+		return nil, err
+	}
+	return []byte(base64.StdEncoding.EncodeToString(encryptBytes)), nil
 }
 
 func (r *Rsa) Decrypt(cipherText []byte) ([]byte, error) {
@@ -50,13 +54,17 @@ func (r *Rsa) Decrypt(cipherText []byte) ([]byte, error) {
 	if block == nil {
 		return nil, errors.New("private key error!")
 	}
-	priv, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	private, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {
 		return nil, err
 	}
-	origin, err := rsa.DecryptPKCS1v15(rand.Reader, priv, cipherText)
+	cipherBase64, err := base64.StdEncoding.DecodeString(string(cipherText))
 	if err != nil {
 		return nil, err
 	}
-	return base64.StdEncoding.DecodeString(string(origin))
+	origin, err := rsa.DecryptPKCS1v15(rand.Reader, private, []byte(cipherBase64))
+	if err != nil {
+		return nil, err
+	}
+	return origin, nil
 }

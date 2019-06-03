@@ -3,6 +3,7 @@ package rabbitmq
 import (
 	"encoding/json"
 
+	"ampp-server/common/rsa"
 	"github.com/streadway/amqp"
 	"github.com/yakaa/log4g"
 )
@@ -14,6 +15,7 @@ type (
 		ConsumerName string
 		stop         chan bool
 		consumerFunc ConsumerFunc
+		rsaHelper    *rsa.Rsa
 	}
 	ConsumerFunc func(message *Message) error
 )
@@ -40,8 +42,12 @@ func (c *Consumer) StartConsume() error {
 	response, err := ch.Consume(c.queueName, c.ConsumerName, false, false, false, false, nil)
 	go func() {
 		for d := range response {
+			body := d.Body
+			if c.rsaHelper != nil {
+				body, _ = c.rsaHelper.Decrypt(d.Body)
+			}
 			message := new(Message)
-			if err := json.Unmarshal(d.Body, message); err != nil {
+			if err := json.Unmarshal(body, message); err != nil {
 				log4g.ErrorFormat("Err Message format %+v", err)
 				if err := d.Ack(false); err != nil {
 					log4g.ErrorFormat("d.Ack message fail err %+v", err)
@@ -76,6 +82,14 @@ func RunConsumes(consumers ...*Consumer) {
 		}(consumer)
 	}
 	<-forever
+}
+
+func (c *Consumer) GetRsaHelper() *rsa.Rsa {
+	return c.rsaHelper
+}
+
+func (c *Consumer) SetRsaRsaHelper(rsaHelper *rsa.Rsa) {
+	c.rsaHelper = rsaHelper
 }
 
 func Close(amqpDial *amqp.Connection) {
