@@ -7,6 +7,7 @@ import (
 	"log"
 
 	"ampp-server/common/rabbitmq"
+	"ampp-server/common/rsa"
 	"ampp-server/config"
 	"ampp-server/handler"
 	"ampp-server/model"
@@ -56,9 +57,18 @@ func main() {
 		model.NewBaseModel(romeoMysqlEngine),
 		model.NewMessagesModel(mysqlEngine),
 	))
+	rsaObj, err := rsa.NewRsa(conf.RsaCert.PublicKeyPath, conf.RsaCert.PrivateKeyPath)
+	if err != nil {
+		log.Fatalf("create rsa fail %+v", err)
+	}
 	mpsConsumer := rabbitmq.BuildConsumer(amqpDial, conf.RabbitMq.MpsQueueName, mpsHandler.Consumer)
 	erpConsumer := rabbitmq.BuildConsumer(amqpDial, conf.RabbitMq.ErpQueueName, erpHandler.Consumer)
 	romeoConsumer := rabbitmq.BuildConsumer(amqpDial, conf.RabbitMq.RomeoQueueName, romeoHandler.Consumer)
+
+	mpsConsumer.SetRsaRsaHelper(rsaObj)
+	erpConsumer.SetRsaRsaHelper(rsaObj)
+	romeoConsumer.SetRsaRsaHelper(rsaObj)
+
 	defer rabbitmq.Close(amqpDial)
 	rabbitmq.RunConsumes(erpConsumer, romeoConsumer, mpsConsumer)
 
