@@ -24,6 +24,7 @@ func NewMessageService(baseModel *model.BaseModel, messageModel *model.MessagesM
 }
 
 func (s *MessageService) ConsumerMessage(message *rabbitmq.Message) error {
+	log4g.ErrorFormat("utils.Execute message ====> %+v", message)
 	status := model.SuccessMessageStatus
 	var err error
 	var param []byte
@@ -41,7 +42,6 @@ func (s *MessageService) ConsumerMessage(message *rabbitmq.Message) error {
 	default:
 		return nil
 	}
-	log4g.ErrorFormat("utils.Execute requestStatus %s  %+v", requestStatus, err)
 	if err == nil || requestStatus == rabbitmq.MessageConsumeSuccessStatus {
 		return nil
 	}
