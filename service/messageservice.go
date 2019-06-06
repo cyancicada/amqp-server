@@ -24,7 +24,7 @@ func NewMessageService(baseModel *model.BaseModel, messageModel *model.MessagesM
 }
 
 func (s *MessageService) ConsumerMessage(message *rabbitmq.Message) error {
-	log4g.ErrorFormat("utils.Execute message ====> %+v", message)
+
 	status := model.SuccessMessageStatus
 	var err error
 	var responseStatus bool
@@ -40,6 +40,7 @@ func (s *MessageService) ConsumerMessage(message *rabbitmq.Message) error {
 		return nil
 	}
 	if bs, err := json.Marshal(message); err == nil {
+		status = model.FailMessageStatus
 		if _, err := s.messageModel.Insert(&model.Messages{
 			Message: string(bs),
 			Status:  status,
