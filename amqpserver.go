@@ -9,7 +9,6 @@ import (
 	"ampp-server/common/rabbitmq"
 	"ampp-server/common/rsa"
 	"ampp-server/config"
-	"ampp-server/handler"
 	"ampp-server/model"
 	"ampp-server/service"
 	"github.com/streadway/amqp"
@@ -44,26 +43,31 @@ func main() {
 	if err != nil {
 		log.Fatalf("create connect fail %+v", err)
 	}
-
-	mpsHandler := handler.NewMpsHandler(service.NewMpsService(
-		model.NewBaseModel(mpsMysqlEngine),
-		model.NewMessagesModel(mysqlEngine),
-	))
-	erpHandler := handler.NewErpHandler(service.NewErpService(
-		model.NewBaseModel(erpMysqlEngine),
-		model.NewMessagesModel(mysqlEngine),
-	))
-	romeoHandler := handler.NewRomeoHandler(service.NewRomeoService(
-		model.NewBaseModel(romeoMysqlEngine),
-		model.NewMessagesModel(mysqlEngine),
-	))
 	rsaObj, err := rsa.NewRsa(conf.RsaCert.PublicKeyPath, conf.RsaCert.PrivateKeyPath)
 	if err != nil {
 		log.Fatalf("create rsa fail %+v", err)
 	}
-	mpsConsumer := rabbitmq.BuildConsumer(amqpDial, conf.RabbitMq.MpsQueueName, mpsHandler.Consumer)
-	erpConsumer := rabbitmq.BuildConsumer(amqpDial, conf.RabbitMq.ErpQueueName, erpHandler.Consumer)
-	romeoConsumer := rabbitmq.BuildConsumer(amqpDial, conf.RabbitMq.RomeoQueueName, romeoHandler.Consumer)
+	mpsConsumer := rabbitmq.BuildConsumer(
+		amqpDial,
+		conf.RabbitMq.MpsQueueName,
+		service.NewMessageService(
+			model.NewBaseModel(mpsMysqlEngine),
+			model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
+	)
+	erpConsumer := rabbitmq.BuildConsumer(
+		amqpDial,
+		conf.RabbitMq.ErpQueueName,
+		service.NewMessageService(
+			model.NewBaseModel(erpMysqlEngine),
+			model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
+	)
+	romeoConsumer := rabbitmq.BuildConsumer(
+		amqpDial,
+		conf.RabbitMq.RomeoQueueName,
+		service.NewMessageService(
+			model.NewBaseModel(romeoMysqlEngine),
+			model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
+	)
 
 	mpsConsumer.SetRsaRsaHelper(rsaObj)
 	erpConsumer.SetRsaRsaHelper(rsaObj)
