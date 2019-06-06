@@ -20,27 +20,11 @@ type (
 	}
 )
 
-//"curl",
-//		"-H",
-//		"Content-Type:application/json",
-//		"-X",
-//		"POST",
-//		"-d",
-//		`{"user": "admin", "passwd":"12345678"}`,
-//		"http://www.xxx.com/test.php",
-
-var (
-	CurlRunParamArray = []string{"-H", "Content-Type:application/json", "-X", "POST", "-d"}
-)
-
 const (
 	ContentType string      = "Content-Type:application/json"
-	CurlType    OperateType = "CURL"
+	HttpType    OperateType = "HTTP"
 	InsertType  OperateType = "INSERT"
 	UpdateType  OperateType = "UPDATE"
 	DeleteType  OperateType = "DELETE"
 	SelectType  OperateType = "SELECT"
-
-	MessageConsumeSuccessStatus string = "SUCCESS"
-	MessageConsumeFailStatus    string = "FAIL"
 )

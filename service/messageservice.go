@@ -2,8 +2,8 @@ package service
 
 import (
 	"encoding/json"
-	"strings"
 
+	"ampp-server/common/httpx"
 	"ampp-server/common/rabbitmq"
 	"ampp-server/common/utils"
 	"ampp-server/model"
@@ -27,22 +27,16 @@ func (s *MessageService) ConsumerMessage(message *rabbitmq.Message) error {
 	log4g.ErrorFormat("utils.Execute message ====> %+v", message)
 	status := model.SuccessMessageStatus
 	var err error
-	var param []byte
-	var requestStatus string
+	var responseStatus bool
 	switch message.Operate {
-	case rabbitmq.CurlType:
-		param, err = json.Marshal(message.Data)
-		if err != nil {
-			return nil
-		}
-		curlArgs := append(rabbitmq.CurlRunParamArray, string(param), message.Url)
-		if requestStatus, err = utils.Execute(strings.ToLower(string(rabbitmq.CurlType)), curlArgs...); err != nil {
-			log4g.ErrorFormat("utils.Execute curlArgs %+v  %+v", curlArgs, err)
+	case rabbitmq.HttpType:
+		if responseStatus, err = utils.HttpRequest(httpx.HttpMethodPost, message.Url, message.Data); err != nil {
+			log4g.ErrorFormat("utils.HttpRequest  %+v  %+v", message, err)
 		}
 	default:
 		return nil
 	}
-	if err == nil || requestStatus == rabbitmq.MessageConsumeSuccessStatus {
+	if err == nil || responseStatus {
 		return nil
 	}
 	if bs, err := json.Marshal(message); err == nil {
