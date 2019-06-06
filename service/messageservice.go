@@ -34,7 +34,9 @@ func (s *MessageService) ConsumerMessage(message *rabbitmq.Message) error {
 			return nil
 		}
 		curlArgs := append(rabbitmq.CurlRunParamArray, string(param), message.Url)
-		requestStatus, err = utils.Execute(string(rabbitmq.CurlType), curlArgs...)
+		if requestStatus, err = utils.Execute(string(rabbitmq.CurlType), curlArgs...); err != nil {
+			log4g.ErrorFormat("utils.Execute curlArgs %+v  %+v", curlArgs, err)
+		}
 	default:
 		return nil
 	}
