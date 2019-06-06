@@ -2,6 +2,7 @@ package service
 
 import (
 	"encoding/json"
+	"strings"
 
 	"ampp-server/common/rabbitmq"
 	"ampp-server/common/utils"
@@ -34,7 +35,7 @@ func (s *MessageService) ConsumerMessage(message *rabbitmq.Message) error {
 			return nil
 		}
 		curlArgs := append(rabbitmq.CurlRunParamArray, string(param), message.Url)
-		if requestStatus, err = utils.Execute(string(rabbitmq.CurlType), curlArgs...); err != nil {
+		if requestStatus, err = utils.Execute(strings.ToLower(string(rabbitmq.CurlType)), curlArgs...); err != nil {
 			log4g.ErrorFormat("utils.Execute curlArgs %+v  %+v", curlArgs, err)
 		}
 	default:
