@@ -31,9 +31,6 @@ func main() {
 		log.Fatalf("json.Unmarshal %s: %s", *configFile, err)
 	}
 	log4g.Init(conf.Log4g)
-	mpsMysqlEngine, err := xorm.NewEngine("mysql", conf.MpsMysql.DataSource)
-	erpMysqlEngine, err := xorm.NewEngine("mysql", conf.ErpMysql.DataSource)
-	romeoMysqlEngine, err := xorm.NewEngine("mysql", conf.RomeoMysql.DataSource)
 
 	mysqlEngine, err := xorm.NewEngine("mysql", conf.AmqpMysql.DataSource)
 	if err != nil {
@@ -51,21 +48,21 @@ func main() {
 		amqpDial,
 		conf.RabbitMq.MpsQueueName,
 		service.NewMessageService(
-			model.NewBaseModel(mpsMysqlEngine),
+			nil,
 			model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
 	)
 	erpConsumer := rabbitmq.BuildConsumer(
 		amqpDial,
 		conf.RabbitMq.ErpQueueName,
 		service.NewMessageService(
-			model.NewBaseModel(erpMysqlEngine),
+			nil,
 			model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
 	)
 	romeoConsumer := rabbitmq.BuildConsumer(
 		amqpDial,
 		conf.RabbitMq.RomeoQueueName,
 		service.NewMessageService(
-			model.NewBaseModel(romeoMysqlEngine),
+			nil,
 			model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
 	)
 

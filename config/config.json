@@ -13,15 +13,6 @@
     "MpsQueueName": "mps_queue",
     "RomeoQueueName": "romeo_queue"
   },
-  "MpsMysql": {
-    "DataSource": "root:Qwer.123@tcp(192.168.1.200:3306)/mps?charset=utf8mb4"
-  },
-  "ErpMysql": {
-    "DataSource": "root:Qwer.123@tcp(192.168.1.200:3306)/ecshop?charset=utf8mb4"
-  },
-  "RomeoMysql": {
-    "DataSource": "root:Qwer.123@tcp(192.168.1.200:3306)/romeo?charset=utf8mb4"
-  },
   "AmqpMysql": {
     "DataSource": "root:Qwer.123@tcp(192.168.1.200:3306)/amqp?charset=utf8mb4"
   }
