@@ -41,6 +41,7 @@ func (s *MessageService) ConsumerMessage(message *rabbitmq.Message) error {
 	default:
 		return nil
 	}
+	log4g.ErrorFormat("utils.Execute requestStatus %s  %+v", requestStatus, err)
 	if err == nil || requestStatus == rabbitmq.MessageConsumeSuccessStatus {
 		return nil
 	}
