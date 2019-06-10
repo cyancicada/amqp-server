@@ -47,23 +47,17 @@ func main() {
 	mpsConsumer := rabbitmq.BuildConsumer(
 		amqpDial,
 		conf.RabbitMq.MpsQueueName,
-		service.NewMessageService(
-			nil,
-			model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
+		service.NewMessageService(model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
 	)
 	erpConsumer := rabbitmq.BuildConsumer(
 		amqpDial,
 		conf.RabbitMq.ErpQueueName,
-		service.NewMessageService(
-			nil,
-			model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
+		service.NewMessageService(model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
 	)
 	romeoConsumer := rabbitmq.BuildConsumer(
 		amqpDial,
 		conf.RabbitMq.RomeoQueueName,
-		service.NewMessageService(
-			nil,
-			model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
+		service.NewMessageService(model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
 	)
 
 	mpsConsumer.SetRsaRsaHelper(rsaObj)

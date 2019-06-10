@@ -5,18 +5,12 @@ import "time"
 type (
 	OperateType string
 	Message     struct {
-		DataBase   string                 `json:"dataBase"`
-		Table      string                 `json:"table"`
-		Operate    OperateType            `json:"operate"`
-		Data       map[string]interface{} `json:"data"`
-		Condition  string                 `json:"condition"`
-		Expiration string                 `json:"expiration"`
-		MessageId  string                 `json:"messageId"`
-		Timestamp  time.Time              `json:"timestamp"`
-		Type       string                 `json:"type"`
-		UserId     string                 `json:"userId"`
-		AppId      string                 `json:"appId"`
-		Url        string                 `json:"url"`
+		Operate   OperateType            `json:"operate"`
+		Data      map[string]interface{} `json:"data"`
+		Condition string                 `json:"condition"`
+		Timestamp time.Time              `json:"timestamp"`
+		Type      string                 `json:"type"`
+		Url       string                 `json:"url"`
 	}
 )
 

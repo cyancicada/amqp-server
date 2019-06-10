@@ -13,14 +13,13 @@ import (
 
 type (
 	MessageService struct {
-		baseModel    *model.BaseModel
 		messageModel *model.MessagesModel
 	}
 )
 
-func NewMessageService(baseModel *model.BaseModel, messageModel *model.MessagesModel) *MessageService {
+func NewMessageService(messageModel *model.MessagesModel) *MessageService {
 
-	return &MessageService{baseModel: baseModel, messageModel: messageModel}
+	return &MessageService{messageModel: messageModel}
 }
 
 func (s *MessageService) ConsumerMessage(message *rabbitmq.Message) error {
