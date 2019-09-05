@@ -6,15 +6,12 @@ import (
 	"io/ioutil"
 	"log"
 
-	"ampp-server/common/rabbitmq"
-	"ampp-server/common/rsa"
-	"ampp-server/config"
-	"ampp-server/model"
-	"ampp-server/service"
-	"github.com/streadway/amqp"
+	"yasuo/common/rabbitmq"
+	"yasuo/config"
+	"yasuo/model"
+	"yasuo/service"
 
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/go-xorm/xorm"
+	"github.com/streadway/amqp"
 	"github.com/yakaa/log4g"
 )
 
@@ -32,39 +29,17 @@ func main() {
 	}
 	log4g.Init(conf.Log4g)
 
-	mysqlEngine, err := xorm.NewEngine("mysql", conf.AmqpMysql.DataSource)
-	if err != nil {
-		log.Fatalf("read file %s: %s", *configFile, err)
-	}
 	amqpDial, err := amqp.Dial(conf.RabbitMq.DataSource)
 	if err != nil {
 		log.Fatalf("create connect fail %+v", err)
 	}
-	rsaObj, err := rsa.NewRsa(conf.RsaCert.PublicKeyPath, conf.RsaCert.PrivateKeyPath)
-	if err != nil {
-		log.Fatalf("create rsa fail %+v", err)
-	}
-	mpsConsumer := rabbitmq.BuildConsumer(
+
+	consumer := rabbitmq.BuildConsumer(
 		amqpDial,
 		conf.RabbitMq.MpsQueueName,
-		service.NewMessageService(model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
+		service.NewMessageService(model.NewMessagesModel()).ConsumerMessage,
 	)
-	erpConsumer := rabbitmq.BuildConsumer(
-		amqpDial,
-		conf.RabbitMq.ErpQueueName,
-		service.NewMessageService(model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
-	)
-	romeoConsumer := rabbitmq.BuildConsumer(
-		amqpDial,
-		conf.RabbitMq.RomeoQueueName,
-		service.NewMessageService(model.NewMessagesModel(mysqlEngine)).ConsumerMessage,
-	)
-
-	mpsConsumer.SetRsaRsaHelper(rsaObj)
-	erpConsumer.SetRsaRsaHelper(rsaObj)
-	romeoConsumer.SetRsaRsaHelper(rsaObj)
-
 	defer rabbitmq.Close(amqpDial)
-	rabbitmq.RunConsumes(erpConsumer, romeoConsumer, mpsConsumer)
+	rabbitmq.RunConsumes(consumer)
 
 }

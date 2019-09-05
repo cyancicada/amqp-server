@@ -3,9 +3,9 @@ package rabbitmq
 import (
 	"encoding/json"
 
-	"ampp-server/common/rsa"
 	"github.com/streadway/amqp"
 	"github.com/yakaa/log4g"
+	"yasuo/common/rsa"
 )
 
 type (
@@ -39,29 +39,19 @@ func (c *Consumer) StartConsume() error {
 	defer func() {
 		log4g.ErrorFormat("Consumer Close Ch err %+v", ch.Close())
 	}()
-	response, err := ch.Consume(c.queueName, c.ConsumerName, false, false, false, false, nil)
+	response, err := ch.Consume(c.queueName, c.ConsumerName, true, false, false, false, nil)
 	go func() {
 		for d := range response {
-			body := d.Body
-			if c.rsaHelper != nil {
-				body, _ = c.rsaHelper.Decrypt(d.Body)
-			}
 			message := new(Message)
-			if err := json.Unmarshal(body, message); err != nil {
+			if err := json.Unmarshal(d.Body, message); err != nil {
 				log4g.ErrorFormat("Err Message format %+v", err)
-				if err := d.Ack(false); err != nil {
-					log4g.ErrorFormat("d.Ack message fail err %+v", err)
-				}
-			} else {
-				if err := c.consumerFunc(message); err != nil {
-					log4g.ErrorFormat("Consume Message Err %+v", err)
-					log4g.InfoFormat("ch.Reject Error %+v", ch.Reject(d.DeliveryTag, true))
-				} else {
-					if err := d.Ack(false); err != nil {
-						log4g.ErrorFormat("d.Ack message fail err %+v", err)
-					}
-				}
+				continue
 			}
+			if err := c.consumerFunc(message); err != nil {
+				log4g.ErrorFormat("Consume Message Err %+v", err)
+				continue
+			}
+			log4g.InfoFormat("Consume message Success  %+v", message)
 		}
 	}()
 	<-c.stop
