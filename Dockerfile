@@ -1,4 +1,5 @@
 FROM scratch
 ADD amqpserver /amqpserver
-RUN chmod 755 /*
+VOLUME /amqpserver/config.json
+VOLUME /amqpserver/logs
 CMD ["/amqpserver","-c","config.json"]
