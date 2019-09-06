@@ -2,10 +2,12 @@ package rabbitmq
 
 import (
 	"encoding/json"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/streadway/amqp"
 	"github.com/yakaa/log4g"
-	"yasuo/common/rsa"
 )
 
 type (
@@ -15,10 +17,17 @@ type (
 		ConsumerName string
 		stop         chan bool
 		consumerFunc ConsumerFunc
-		rsaHelper    *rsa.Rsa
 	}
 	ConsumerFunc func(message *Message) error
 )
+
+var deadSignal = []os.Signal{
+	syscall.SIGTERM,
+	syscall.SIGINT,
+	syscall.SIGKILL,
+	syscall.SIGHUP,
+	syscall.SIGQUIT,
+}
 
 func BuildConsumer(amqpDial *amqp.Connection, queueName string, consumerFunc ConsumerFunc) *Consumer {
 	return &Consumer{amqpDial: amqpDial, queueName: queueName, stop: make(chan bool), consumerFunc: consumerFunc}
@@ -58,32 +67,23 @@ func (c *Consumer) StartConsume() error {
 	return nil
 }
 
-func RunConsumes(consumers ...*Consumer) {
-	if len(consumers) == 0 {
-		return
+func (c *Consumer) Run() error {
+	c.Close()
+	if err := c.StartConsume(); err != nil {
+		return err
 	}
-	forever := make(chan bool)
-	for _, consumer := range consumers {
-		go func(c *Consumer) {
-			log4g.InfoFormat("start Consumer queueName [%s]...", c.queueName)
-			if err := c.StartConsume(); err != nil {
-				log4g.ErrorFormat("consumer.StartConsume fail %+v", err)
-			}
-		}(consumer)
-	}
-	<-forever
+	return nil
 }
 
-func (c *Consumer) GetRsaHelper() *rsa.Rsa {
-	return c.rsaHelper
-}
-
-func (c *Consumer) SetRsaRsaHelper(rsaHelper *rsa.Rsa) {
-	c.rsaHelper = rsaHelper
-}
-
-func Close(amqpDial *amqp.Connection) {
-	if err := amqpDial.Close(); err != nil {
-		log4g.ErrorFormat("Consumer conn Close err %+v", err)
-	}
+func (c *Consumer) Close() {
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, deadSignal...)
+	go func() {
+		log4g.InfoFormat(" receive dead signal %+v ", <-ch)
+		if err := c.amqpDial.Close(); err != nil {
+			log4g.InfoFormat("Consumer conn Close err %+v by receive dead signal", err)
+		}
+		c.stop <- true
+		os.Exit(1)
+	}()
 }

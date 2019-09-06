@@ -15,10 +15,8 @@ type (
 	}
 
 	RabbitMq struct {
-		DataSource     string
-		ErpQueueName   string
-		MpsQueueName   string
-		RomeoQueueName string
+		DataSource string
+		QueueName  string
 	}
 	RsaCert struct {
 		PublicKeyPath  string

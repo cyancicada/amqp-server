@@ -3,17 +3,8 @@
     "Path": "logs",
     "Stdout": true
   },
-  "RsaCert": {
-    "PrivateKeyPath": "./cert/rsa_private_key.pem",
-    "PublicKeyPath": "./cert/rsa_public_key.pem"
-  },
   "RabbitMq": {
-    "DataSource": "amqp://root:123456@192.168.1.200:5672/",
-    "ErpQueueName": "erp_queue",
-    "MpsQueueName": "mps_queue",
-    "RomeoQueueName": "romeo_queue"
-  },
-  "AmqpMysql": {
-    "DataSource": "root:Qwer.123@tcp(192.168.1.200:3306)/amqp?charset=utf8mb4"
+    "DataSource": "amqp://guest:guest@192.168.1.71:5672",
+    "QueueName": "mps_queue"
   }
 }

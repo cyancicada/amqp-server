@@ -36,10 +36,9 @@ func main() {
 
 	consumer := rabbitmq.BuildConsumer(
 		amqpDial,
-		conf.RabbitMq.MpsQueueName,
+		conf.RabbitMq.QueueName,
 		service.NewMessageService(model.NewMessagesModel()).ConsumerMessage,
 	)
-	defer rabbitmq.Close(amqpDial)
-	rabbitmq.RunConsumes(consumer)
+	log4g.Error(consumer.Run())
 
 }
