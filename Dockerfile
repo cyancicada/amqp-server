@@ -1,3 +1,4 @@
 FROM scratch
 ADD amqpserver /amqpserver
-CMD ["/amqpserver"]
+RUN chmod 755 /*
+CMD ["/amqpserver","-c","config.json"]
