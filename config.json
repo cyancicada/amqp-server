@@ -1,0 +1,10 @@
+{
+  "Log4g": {
+    "Path": "logs",
+    "Stdout": true
+  },
+  "RabbitMq": {
+    "DataSource": "amqp://guest:guest@127.0.0.1:5672",
+    "QueueName": "test_queue"
+  }
+}
