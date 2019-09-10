@@ -11,7 +11,6 @@ import (
 	"yasuo/model"
 	"yasuo/service"
 
-	"github.com/streadway/amqp"
 	"github.com/yakaa/log4g"
 )
 
@@ -28,17 +27,12 @@ func main() {
 		log.Fatalf("json.Unmarshal %s: %s", *configFile, err)
 	}
 	log4g.Init(conf.Log4g)
-
-	amqpDial, err := amqp.Dial(conf.RabbitMq.DataSource)
-	if err != nil {
-		log.Fatalf("create connect fail %+v", err)
-	}
-
-	consumer := rabbitmq.BuildConsumer(
-		amqpDial,
-		conf.RabbitMq.QueueName,
+	consumer, err := rabbitmq.BuildConsumer(
+		conf.RabbitMq,
 		service.NewMessageService(model.NewMessagesModel()).ConsumerMessage,
 	)
+	if err != nil {
+		log.Fatalf("create publisher fail %+v", err)
+	}
 	log4g.Error(consumer.Run())
-
 }

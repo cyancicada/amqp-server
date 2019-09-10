@@ -4,7 +4,14 @@
     "Stdout": true
   },
   "RabbitMq": {
-    "DataSource": "amqp://guest:guest@127.0.0.1:5672",
-    "QueueName": "test_queue"
+    "DataSource": "amqp://guest:guest@192.168.1.71:5672",
+    "QueueName": "ErpDefaultQueue",
+    "Consumer": "ErpDefaultQueueConsumer",
+    "AutoAck": false,
+    "Durable": false,
+    "AutoDelete": false,
+    "Exclusive": false,
+    "NoLocal": false,
+    "NoWait": false
   }
 }

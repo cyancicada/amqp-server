@@ -2,38 +2,43 @@ package rabbitmq
 
 import (
 	"encoding/json"
+	"os"
+	"os/signal"
 
 	"github.com/streadway/amqp"
 	"github.com/yakaa/log4g"
+	"yasuo/config"
 )
 
 type (
 	Publisher struct {
-		amqpDial  *amqp.Connection
-		queueName string
-		Exchange  string
+		amqpDial   *amqp.Connection
+		amqpDialCh *amqp.Channel
+		conf       config.RabbitMq
 	}
 )
 
-func BuildPublisher(amqpDial *amqp.Connection, queueName string) *Publisher {
-	return &Publisher{amqpDial: amqpDial, queueName: queueName}
-}
-
-func (p *Publisher) SetExchange(exchange string) {
-	p.Exchange = exchange
-}
-
-func (p *Publisher) Push(message Message) error {
-	ch, err := p.amqpDial.Channel()
+func BuildPublisher(conf config.RabbitMq) (*Publisher, error) {
+	amqpDial, err := amqp.Dial(conf.DataSource)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	defer func() {
-		if err := ch.Close(); err != nil {
-			log4g.ErrorFormat("Publish Close Ch err %+v", err)
-		}
-	}()
-	q, err := ch.QueueDeclare(p.queueName, true, false, false, false, nil)
+	ch, err := amqpDial.Channel()
+	if err != nil {
+		return nil, err
+	}
+	return &Publisher{amqpDial: amqpDial, conf: conf, amqpDialCh: ch}, nil
+}
+
+func (p *Publisher) Push(message *Message) error {
+	q, err := p.amqpDialCh.QueueDeclare(
+		p.conf.QueueName,
+		p.conf.Durable,
+		p.conf.AutoDelete,
+		p.conf.Exclusive,
+		p.conf.NoWait,
+		p.conf.Args,
+	)
 	if err != nil {
 		return err
 	}
@@ -41,7 +46,7 @@ func (p *Publisher) Push(message Message) error {
 	if err != nil {
 		return err
 	}
-	if err = ch.Publish(p.Exchange, q.Name, false, false, amqp.Publishing{
+	if err = p.amqpDialCh.Publish(p.conf.Exchange, q.Name, false, false, amqp.Publishing{
 		DeliveryMode: amqp.Persistent,
 		Body:         body,
 	}); err != nil {
@@ -50,8 +55,21 @@ func (p *Publisher) Push(message Message) error {
 	return nil
 }
 
+func (p *Publisher) GetQueueName() string {
+	return p.conf.QueueName
+}
+
 func (p *Publisher) Close() {
-	if err := p.amqpDial.Close(); err != nil {
-		log4g.ErrorFormat("Publisher conn Close err %+v", err)
-	}
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, DeadSignal...)
+	go func() {
+		log4g.InfoFormat("Publisher receive dead signal %+v ", <-ch)
+		if err := p.amqpDialCh.Close(); err != nil {
+			log4g.ErrorFormat("c.amqpDialCh.Close err %+v", err)
+		}
+		if err := p.amqpDial.Close(); err != nil {
+			log4g.InfoFormat("Publisher conn Close err %+v by receive dead signal", err)
+		}
+		os.Exit(1)
+	}()
 }

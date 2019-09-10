@@ -4,51 +4,56 @@ import (
 	"encoding/json"
 	"os"
 	"os/signal"
-	"syscall"
 
 	"github.com/streadway/amqp"
 	"github.com/yakaa/log4g"
+	"yasuo/config"
 )
 
 type (
 	Consumer struct {
 		amqpDial     *amqp.Connection
-		queueName    string
-		ConsumerName string
+		amqpDialCh   *amqp.Channel
 		stop         chan bool
 		consumerFunc ConsumerFunc
+		conf         config.RabbitMq
 	}
 	ConsumerFunc func(message *Message) error
 )
 
-var deadSignal = []os.Signal{
-	syscall.SIGTERM,
-	syscall.SIGINT,
-	syscall.SIGKILL,
-	syscall.SIGHUP,
-	syscall.SIGQUIT,
+func BuildConsumer(conf config.RabbitMq, consumerFunc ConsumerFunc) (*Consumer, error) {
+	amqpDial, err := amqp.Dial(conf.DataSource)
+	if err != nil {
+		return nil, err
+	}
+	ch, err := amqpDial.Channel()
+	if err != nil {
+		return nil, err
+	}
+	return &Consumer{
+		amqpDial:     amqpDial,
+		stop:         make(chan bool),
+		consumerFunc: consumerFunc,
+		amqpDialCh:   ch,
+		conf:         conf,
+	}, nil
 }
-
-func BuildConsumer(amqpDial *amqp.Connection, queueName string, consumerFunc ConsumerFunc) *Consumer {
-	return &Consumer{amqpDial: amqpDial, queueName: queueName, stop: make(chan bool), consumerFunc: consumerFunc}
-}
-
-func (c *Consumer) SetConsumerName(consumerName string) {
-	c.ConsumerName = consumerName
-}
-
 func (c *Consumer) StartConsume() error {
-	ch, err := c.amqpDial.Channel()
+	if err := c.amqpDialCh.Qos(1, 0, false); err != nil {
+		return err
+	}
+	response, err := c.amqpDialCh.Consume(
+		c.conf.QueueName,
+		c.conf.Consumer,
+		c.conf.AutoAck,
+		c.conf.Exclusive,
+		c.conf.NoLocal,
+		c.conf.NoWait,
+		c.conf.Args,
+	)
 	if err != nil {
 		return err
 	}
-	if err = ch.Qos(1, 0, false); err != nil {
-		return err
-	}
-	defer func() {
-		log4g.ErrorFormat("Consumer Close Ch err %+v", ch.Close())
-	}()
-	response, err := ch.Consume(c.queueName, c.ConsumerName, true, false, false, false, nil)
 	go func() {
 		for d := range response {
 			message := new(Message)
@@ -68,6 +73,7 @@ func (c *Consumer) StartConsume() error {
 }
 
 func (c *Consumer) Run() error {
+	log4g.InfoFormat("consumer start run..., listen queue name is %s", c.conf.QueueName)
 	c.Close()
 	if err := c.StartConsume(); err != nil {
 		return err
@@ -77,9 +83,12 @@ func (c *Consumer) Run() error {
 
 func (c *Consumer) Close() {
 	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, deadSignal...)
+	signal.Notify(ch, DeadSignal...)
 	go func() {
-		log4g.InfoFormat(" receive dead signal %+v ", <-ch)
+		log4g.InfoFormat("Consumer receive dead signal %+v ", <-ch)
+		if err := c.amqpDialCh.Close(); err != nil {
+			log4g.ErrorFormat("c.amqpDialCh.Close err %+v", err)
+		}
 		if err := c.amqpDial.Close(); err != nil {
 			log4g.InfoFormat("Consumer conn Close err %+v by receive dead signal", err)
 		}

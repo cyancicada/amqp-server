@@ -17,6 +17,15 @@ type (
 	RabbitMq struct {
 		DataSource string
 		QueueName  string
+		Consumer   string
+		Exchange   string
+		Durable    bool
+		AutoDelete bool
+		AutoAck    bool
+		Exclusive  bool
+		NoLocal    bool
+		NoWait     bool
+		Args       map[string]interface{}
 	}
 	RsaCert struct {
 		PublicKeyPath  string

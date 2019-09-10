@@ -5,12 +5,7 @@ type (
 	}
 )
 
-const (
-	SuccessMessageStatus string = "SUCCESS"
-	FailMessageStatus    string = "FAIL"
-)
-
 func NewMessagesModel() *MessagesModel {
 
-	return new(MessagesModel)
+	return &MessagesModel{}
 }
