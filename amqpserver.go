@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 
@@ -27,6 +28,7 @@ func main() {
 		log.Fatalf("json.Unmarshal %s: %s", *configFile, err)
 	}
 	log4g.Init(conf.Log4g)
+	fmt.Println(conf.RabbitMq)
 	consumer, err := rabbitmq.BuildConsumer(
 		conf.RabbitMq,
 		service.NewMessageService(model.NewMessagesModel()).ConsumerMessage,

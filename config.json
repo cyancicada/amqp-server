@@ -7,7 +7,7 @@
     "DataSource": "amqp://guest:guest@192.168.1.71:5672",
     "QueueName": "ErpDefaultQueue",
     "Consumer": "ErpDefaultQueueConsumer",
-    "AutoAck": false,
+    "AutoAck": true,
     "Durable": false,
     "AutoDelete": false,
     "Exclusive": false,
