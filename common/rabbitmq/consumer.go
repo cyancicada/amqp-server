@@ -5,9 +5,9 @@ import (
 	"os"
 	"os/signal"
 
+	"consumer/config"
 	"github.com/streadway/amqp"
 	"github.com/yakaa/log4g"
-	"yasuo/config"
 )
 
 type (
@@ -49,7 +49,7 @@ func (c *Consumer) StartConsume() error {
 		c.conf.Exclusive,
 		c.conf.NoLocal,
 		c.conf.NoWait,
-		c.conf.Args,
+		QueueDelayedTable,
 	)
 	if err != nil {
 		return err
@@ -61,11 +61,11 @@ func (c *Consumer) StartConsume() error {
 				log4g.ErrorFormat("Err Message format %+v", err)
 				continue
 			}
+			log4g.InfoFormat("start Consume message %+v", message)
 			if err := c.consumerFunc(message); err != nil {
 				log4g.ErrorFormat("Consume Message Err %+v", err)
 				continue
 			}
-			log4g.InfoFormat("Consume message Success  %+v", message)
 		}
 	}()
 	<-c.stop

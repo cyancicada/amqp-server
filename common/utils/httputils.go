@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"yasuo/common/httpx"
+	"consumer/common/httpx"
 
 	"github.com/yakaa/log4g"
 )

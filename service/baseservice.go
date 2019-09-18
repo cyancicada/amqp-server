@@ -1,6 +1,6 @@
 package service
 
-import "yasuo/common/rabbitmq"
+import "consumer/common/rabbitmq"
 
 type (
 	BaseMessageConsumerService interface {

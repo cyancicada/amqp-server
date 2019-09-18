@@ -1,11 +1,10 @@
 package service
 
 import (
-	"yasuo/common/httpx"
-	"yasuo/common/rabbitmq"
-	"yasuo/common/utils"
-	"yasuo/model"
-
+	"consumer/common/httpx"
+	"consumer/common/rabbitmq"
+	"consumer/common/utils"
+	"consumer/model"
 	"github.com/yakaa/log4g"
 )
 
@@ -21,13 +20,16 @@ func NewMessageService(messageModel *model.MessagesModel) *MessageService {
 }
 
 func (s *MessageService) ConsumerMessage(message *rabbitmq.Message) error {
-	var err error
-	var responseStatus bool
-	if responseStatus, err = utils.HttpRequest(httpx.HttpMethodPost, message.Url, message.Data); err != nil {
-		log4g.ErrorFormat("utils.HttpRequest  %+v  %+v", message, err)
+	if message.Delay > 0 && message.IsDelay == false {
+		message.IsDelay = true
+		return s.messageModel.PublishDelayMessage(message)
 	}
-	if err == nil || responseStatus {
-		return nil
+	if responseStatus, err := utils.HttpRequest(httpx.HttpMethodPost, message.Url, message.Data); err != nil || responseStatus == false {
+		log4g.ErrorFormat("http send message Error %+v", err)
+		if message.RetryTime > 0 {
+			message.Delay = message.RetryTime
+			return s.messageModel.PublishDelayMessage(message)
+		}
 	}
-	return err
+	return nil
 }

@@ -11,7 +11,7 @@ type (
 
 var (
 	HttpClient = &http.Client{
-		Timeout: 5 * time.Second,
+		Timeout: 3 * time.Second,
 	}
 )
 

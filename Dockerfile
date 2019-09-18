@@ -1,8 +1,6 @@
-FROM alpine
+FROM scratch
 VOLUME /tmp/apps/logs
-VOLUME /tmp/apps/conf
 COPY ./amqpserver /tmp/apps/amqpserver
-COPY ./config.json /tmp/apps/conf/config.json
+COPY ./config.json /tmp/apps/config.json
 WORKDIR /tmp/apps
-RUN chmod +x amqpserver
-CMD ["./amqpserver","-c","/tmp/apps/conf/config.json"]
+CMD ["./amqpserver","-c","/tmp/apps/config.json"]

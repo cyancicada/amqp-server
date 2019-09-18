@@ -6,10 +6,10 @@ import (
 	"io/ioutil"
 	"log"
 
-	"yasuo/common/rabbitmq"
-	"yasuo/config"
-	"yasuo/model"
-	"yasuo/service"
+	"consumer/common/rabbitmq"
+	"consumer/config"
+	"consumer/model"
+	"consumer/service"
 
 	"github.com/yakaa/log4g"
 )
@@ -27,9 +27,13 @@ func main() {
 		log.Fatalf("json.Unmarshal %s: %s", *configFile, err)
 	}
 	log4g.Init(conf.Log4g)
+	publisher, err := rabbitmq.BuildPublisher(conf.RabbitMq)
+	if err != nil {
+		log.Fatalf("create publisher err %+v", err)
+	}
 	consumer, err := rabbitmq.BuildConsumer(
 		conf.RabbitMq,
-		service.NewMessageService(model.NewMessagesModel()).ConsumerMessage,
+		service.NewMessageService(model.NewMessagesModel(publisher)).ConsumerMessage,
 	)
 	if err != nil {
 		log.Fatalf("create publisher fail %+v", err)
