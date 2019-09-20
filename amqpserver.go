@@ -35,6 +35,7 @@ func main() {
 		conf.RabbitMq,
 		service.NewMessageService(model.NewMessagesModel(publisher)).ConsumerMessage,
 	)
+	publisher.Close()
 	if err != nil {
 		log.Fatalf("create publisher fail %+v", err)
 	}
